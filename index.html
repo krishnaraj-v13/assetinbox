@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asset Inbox – Daily Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F0F4F8;display:flex;flex-direction:column;align-items:center;padding:40px 16px;min-height:100vh;gap:18px;}
+
+/* ── DOWNLOAD BUTTON ── */
+#downloadBtn{
+  display:inline-flex;align-items:center;gap:9px;
+  background:linear-gradient(135deg,#0B3D2E,#0E5C42);
+  color:#FFFFFF;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:600;
+  letter-spacing:0.6px;
+  padding:10px 26px;
+  border-radius:50px;
+  border:none;cursor:pointer;
+  box-shadow:0 6px 24px rgba(11,61,46,0.28);
+  transition:transform 0.18s,box-shadow 0.18s,opacity 0.18s;
+  order:-1;
+}
+#downloadBtn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(11,61,46,0.35);}
+#downloadBtn:active{transform:scale(0.97);}
+#downloadBtn svg{transition:transform 0.2s;}
+#downloadBtn:hover svg{transform:translateY(2px);}
+#downloadBtn.loading{opacity:0.7;pointer-events:none;}
+
+.card{
+  width:490px;
+  border-radius:22px;
+  overflow:hidden;
+  font-family:'DM Sans',sans-serif;
+  background:#FFFFFF;
+  border:1px solid #E2EDF5;
+  box-shadow:0 8px 40px rgba(0,120,90,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  position:relative;
+}
+
+/* TOP GRADIENT HEADER */
+.hero{
+  background:linear-gradient(135deg,#0B3D2E 0%,#0E5C42 45%,#0A7055 100%);
+  padding:18px 22px 22px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;
+  top:-30px;right:-30px;
+  width:160px;height:160px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.06);
+}
+.hero::after{
+  content:'';position:absolute;
+  bottom:-50px;left:60px;
+  width:120px;height:120px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.hero-grid{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;}
+.brand{display:flex;align-items:center;gap:11px;}
+.logo-bg{
+  width:46px;height:46px;border-radius:12px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.b-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#FFFFFF;letter-spacing:0.2px;}
+.b-sub{font-size:9px;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.date-box{
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;padding:6px 14px;text-align:center;
+}
+.date-lbl{font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;}
+.date-val{font-family:'DM Mono',monospace;font-size:13px;color:#FFFFFF;font-weight:500;margin-top:1px;}
+
+/* AUM BANNER */
+.aum-banner{
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:8px;
+  padding:7px 16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:14px;position:relative;z-index:1;
+}
+.aum-dot{width:6px;height:6px;border-radius:50%;background:#4DFFB4;}
+.aum-txt{font-size:10px;color:rgba(255,255,255,0.8);letter-spacing:1.5px;text-transform:uppercase;font-weight:500;}
+
+/* BODY */
+.body{padding:16px 18px;}
+
+/* SECTION */
+.section{
+  border-radius:14px;
+  margin-bottom:12px;
+  overflow:hidden;
+  border:1px solid;
+}
+.section.eq{border-color:#C6EDE1;background:#F4FBF8;}
+.section.alt{border-color:#DDD5F9;background:#F8F6FF;}
+
+.sec-top{
+  padding:10px 16px 8px;
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid;
+}
+.sec-top.eq{border-color:#C6EDE1;}
+.sec-top.alt{border-color:#DDD5F9;}
+
+.sec-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  padding:4px 18px;border-radius:20px;
+}
+.sec-badge.teal{background:#0E5C42;color:#FFFFFF;}
+.sec-badge.purple{background:#5B3FD6;color:#FFFFFF;}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.6);}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1px 1fr;}
+.col-sep.eq{background:linear-gradient(180deg,transparent,#C6EDE1 20%,#C6EDE1 80%,transparent);}
+.col-sep.alt{background:linear-gradient(180deg,transparent,#DDD5F9 20%,#DDD5F9 80%,transparent);}
+.col{padding:12px 14px;}
+
+.col-label{
+  font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  margin-bottom:10px;display:flex;align-items:center;gap:5px;
+}
+.cl-today{color:#D97706;}
+.cl-overall{color:#2563EB;}
+.col-label::before{content:'';width:4px;height:4px;border-radius:50%;}
+.cl-today::before{background:#D97706;}
+.cl-overall::before{background:#2563EB;}
+
+.stat{
+  display:flex;align-items:baseline;gap:7px;
+  padding:5px 0;border-bottom:1px solid;
+}
+.stat:last-child{border-bottom:none;}
+.eq .stat{border-color:rgba(14,92,66,0.07);}
+.alt .stat{border-color:rgba(91,63,214,0.07);}
+
+.snum{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;min-width:22px;line-height:1;}
+.snum.teal{color:#0B8C63;}
+.snum.purple{color:#5B3FD6;}
+.slbl{font-size:11px;color:#64748B;line-height:1.35;}
+.ssub{
+  font-size:9.5px;color:#94A3B8;
+  padding:0 0 6px 29px;margin-top:-3px;font-style:italic;
+}
+
+/* INSURANCE */
+.ins-row{
+  background:#FFFBF0;
+  border:1px solid #FDE68A;
+  border-radius:12px;
+  margin-bottom:12px;
+  display:flex;
+  overflow:hidden;
+}
+.ins-item{flex:1;padding:10px 8px;text-align:center;}
+.ins-item+.ins-item{border-left:1px solid #FDE68A;}
+.ins-num{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#B45309;}
+.ins-lbl{font-size:9px;color:#92400E;letter-spacing:0.3px;margin-top:3px;font-weight:500;}
+
+/* FOOTER */
+.footer{
+  background:linear-gradient(135deg,#0B3D2E,#0E5C42);
+  padding:14px 18px 16px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.footer::before{
+  content:'';position:absolute;
+  top:-20px;right:-20px;width:90px;height:90px;border-radius:50%;
+  background:rgba(255,255,255,0.05);
+}
+.contact-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:7px;padding:5px 18px;margin-bottom:9px;
+}
+.c-ph{font-family:'DM Mono',monospace;font-size:12px;color:#FFFFFF;font-weight:500;letter-spacing:0.8px;}
+.f-by{font-size:9.5px;color:rgba(255,255,255,0.5);letter-spacing:0.3px;}
+.f-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#FFFFFF;margin-top:1px;}
+.f-title{font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;letter-spacing:0.3px;}
+.f-co{font-size:8.5px;color:rgba(255,255,255,0.3);letter-spacing:1.8px;text-transform:uppercase;margin-top:5px;}
+
+.wm{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;}
+.wm::before{
+  content:'';position:absolute;
+  top:50%;left:-10%;width:120%;height:1px;
+  background:rgba(255,255,255,0.05);
+  transform:rotate(-8deg);
+}
+
+/* ── EDITABLE FIELD STYLES ── */
+.val{
+  display:inline-block;
+  font-family:'DM Mono',monospace;
+  font-size:15px;font-weight:500;
+  min-width:28px;
+  line-height:1;
+  outline:none;
+  border:none;
+  background:transparent;
+  cursor:text;
+  caret-color:currentColor;
+  transition:background 0.15s, border-radius 0.15s;
+}
+.val:focus{
+  background:rgba(0,0,0,0.04);
+  border-radius:4px;
+  outline:none;
+}
+.val.teal{color:#0B8C63;}
+.val.purple{color:#5B3FD6;}
+.val.amber{color:#B45309;font-size:16px;}
+.val.sub{
+  font-size:9.5px;
+  font-style:italic;
+  color:#94A3B8;
+  min-width:20px;
+}
+
+/* placeholder via ::before when empty */
+.val:empty::before{
+  content:attr(data-ph);
+  opacity:0.30;
+  pointer-events:none;
+}
+.val.teal:empty::before{color:#0B8C63;}
+.val.purple:empty::before{color:#5B3FD6;}
+.val.amber:empty::before{color:#B45309;}
+.val.sub:empty::before{color:#94A3B8;}
+
+/* ── EDIT HINT ── */
+.edit-hint{
+  font-family:'DM Sans',sans-serif;
+  font-size:10px;color:#94A3B8;
+  letter-spacing:0.3px;
+  text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.edit-hint svg{opacity:0.6;}
+
+/* ── BUTTON BAR ── */
+.btn-bar{
+  display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;justify-content:center;
+}
+
+/* ── CLEAR BUTTON ── */
+#clearBtn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:transparent;
+  color:#94A3B8;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:600;
+  letter-spacing:0.6px;
+  padding:10px 20px;
+  border-radius:50px;
+  border:1.5px solid #CBD5E1;
+  cursor:pointer;
+  transition:all 0.18s;
+}
+#clearBtn:hover{border-color:#EF4444;color:#EF4444;background:rgba(239,68,68,0.05);}
+#clearBtn:active{transform:scale(0.97);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#0E5C42;color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  letter-spacing:0.4px;
+  padding:8px 20px;border-radius:50px;
+  box-shadow:0 6px 24px rgba(11,61,46,0.30);
+  opacity:0;pointer-events:none;
+  transition:opacity 0.22s, transform 0.22s;
+  display:flex;align-items:center;gap:7px;
+  white-space:nowrap;
+  z-index:9999;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.error{background:#B91C1C;}
+</style>
+</head>
+<body>
+
+<!-- Button Bar (outside card so it won't be captured) -->
+<div class="btn-bar">
+  <button id="downloadBtn" onclick="downloadCard()">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 12h11" stroke="white" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    Download as Image
+  </button>
+  <button id="clearBtn" onclick="clearData()">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M2 2l9 9M11 2l-9 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    Clear Data
+  </button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div class="card" id="reportCard">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wm"></div>
+    <div class="hero-grid">
+      <div class="brand">
+        <div class="logo-bg">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M13 4C7.5 4 4 8 4 13s3.5 9 9 9 9-4 9-9" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M13 8v10M9 11l4-3 4 3" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20.5" cy="6.5" r="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+            <path d="M19 6.5h3M20.5 5v3" stroke="rgba(255,255,255,0.7)" stroke-width="0.9" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="b-name">Asset Inbox</div>
+          <div class="b-sub">Financial Marketplace</div>
+        </div>
+      </div>
+      <div class="date-box">
+        <div class="date-lbl">Daily Report</div>
+        <div class="date-val" id="todayDate"></div>
+      </div>
+    </div>
+    <div class="aum-banner">
+      <div class="aum-dot"></div>
+      <span class="aum-txt">Asset Under Management</span>
+      <div class="aum-dot"></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- EQUITY -->
+    <div class="section eq">
+      <div class="sec-top eq">
+        <span class="sec-badge teal">
+          <span class="badge-dot"></span>Equity<span class="badge-dot"></span>
+        </span>
+      </div>
+      <div class="two-col">
+        <div class="col">
+          <div class="col-label cl-today">Today Stats</div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">People contacted</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Lumpsum today</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">SIP today</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">NPS Investments</span>
+          </div>
+        </div>
+        <div class="col-sep eq"></div>
+        <div class="col">
+          <div class="col-label cl-overall">Overall Stats</div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Crores MF Assets</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Active MF Investors</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Family Assets under mgmt</span>
+          </div>
+          <div class="stat">
+            <span class="snum teal"><span class="val teal" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">NPS Assets</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALTERNATIVES -->
+    <div class="section alt">
+      <div class="sec-top alt">
+        <span class="sec-badge purple">
+          <span class="badge-dot"></span>Alternative Investments<span class="badge-dot"></span>
+        </span>
+      </div>
+      <div class="two-col">
+        <div class="col">
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">People contacted</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">P2P Lending</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Cattle Investments</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Startup Investments</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Fixed Bonds</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Fractional Realestate</span>
+          </div>
+        </div>
+        <div class="col-sep alt"></div>
+        <div class="col">
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">P2P Lending Assets</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Cattle Live Stocks</span>
+          </div>
+          <div class="ssub">
+            <span class="val sub" contenteditable="true" data-ph="0" spellcheck="false"></span> goats
+            &nbsp;·&nbsp;
+            <span class="val sub" contenteditable="true" data-ph="0" spellcheck="false"></span> cows
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Startup Investments</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Bonds</span>
+          </div>
+          <div class="stat">
+            <span class="snum purple"><span class="val purple" contenteditable="true" data-ph="0" spellcheck="false"></span></span>
+            <span class="slbl">Other Investments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSURANCE -->
+    <div class="ins-row">
+      <div class="ins-item">
+        <div class="ins-num"><span class="val amber" contenteditable="true" data-ph="0" spellcheck="false"></span></div>
+        <div class="ins-lbl">Health Insurance</div>
+      </div>
+      <div class="ins-item">
+        <div class="ins-num"><span class="val amber" contenteditable="true" data-ph="0" spellcheck="false"></span></div>
+        <div class="ins-lbl">Life Insurance</div>
+      </div>
+      <div class="ins-item">
+        <div class="ins-num"><span class="val amber" contenteditable="true" data-ph="0" spellcheck="false"></span></div>
+        <div class="ins-lbl">Loan against MF</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="contact-pill">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 2h2.5l1 2-1.5 1.2C4.5 7 5 7.5 6.8 8.5L8 7l2 1V10C7 11.5 1 7.5 2 2z" fill="rgba(255,255,255,0.7)"/>
+      </svg>
+      <span class="c-ph">96887-55885</span>
+    </div>
+    <div class="f-by">Managed by</div>
+    <div class="f-name">Krishnaraj V</div>
+    <div class="f-title">Wealth Architect &amp; Founder</div>
+    <div class="f-co">Asset Inbox Financial Marketplace</div>
+  </div>
+
+</div>
+
+<!-- Edit hint below card -->
+<div class="edit-hint">
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <path d="M1 11L3.5 9 9.5 3 9 2.5 3 8.5 1 11ZM9 2.5L10 1.5 10.5 2 9.5 3 9 2.5Z" fill="#94A3B8"/>
+  </svg>
+  Click any number to edit
+</div>
+
+<script>
+const STORAGE_KEY = 'assetInbox_reportData';
+const DOWNLOAD_ICON = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h11" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+
+/* ── AUTO DATE ── */
+(function(){
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mmm = months[now.getMonth()];
+  const yy = String(now.getFullYear()).slice(-2);
+  document.getElementById('todayDate').textContent = dd + '-' + mmm + '-' + yy;
+})();
+
+/* ── ASSIGN STABLE KEYS TO EACH EDITABLE FIELD ── */
+document.querySelectorAll('.val').forEach((el, i) => {
+  el.dataset.fieldKey = 'field_' + i;
+});
+
+/* ── TOAST ── */
+let toastTimer = null;
+function showToast(msg, isError = false){
+  const t = document.getElementById('toast');
+  t.className = isError ? 'error' : '';
+  t.innerHTML = isError
+    ? `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v5M6.5 10v.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>${msg}`
+    : `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>${msg}`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ── SAVE ALL FIELDS TO localStorage ── */
+let saveTimer = null;
+function saveData(){
+  const data = {};
+  document.querySelectorAll('.val').forEach(el => {
+    data[el.dataset.fieldKey] = el.textContent;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showToast('Saved');
+  } catch(e){
+    showToast('Could not save', true);
+  }
+}
+
+/* ── RESTORE FROM localStorage ON LOAD ── */
+function restoreData(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    document.querySelectorAll('.val').forEach(el => {
+      const saved = data[el.dataset.fieldKey];
+      if (saved !== undefined && saved !== '') {
+        el.textContent = saved;
+      }
+    });
+  } catch(e){ /* silently ignore corrupt data */ }
+}
+
+/* ── CLEAR ALL DATA ── */
+function clearData(){
+  if (!confirm('Clear all entered data? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.val').forEach(el => { el.textContent = ''; });
+  showToast('Data cleared');
+}
+
+/* ── WIRE UP EDITABLE FIELDS ── */
+document.querySelectorAll('.val').forEach(el => {
+  /* Save with debounce on every input */
+  el.addEventListener('input', () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveData, 600);
+  });
+
+  /* Save immediately on blur */
+  el.addEventListener('blur', () => {
+    clearTimeout(saveTimer);
+    saveData();
+  });
+
+  /* Enter key exits field */
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+  });
+
+  /* Select all on focus for quick overwrite */
+  el.addEventListener('focus', () => {
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+
+  /* Paste as plain text only */
+  el.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData)
+      .getData('text/plain').replace(/\n/g,' ').trim();
+    document.execCommand('insertText', false, text);
+  });
+});
+
+/* Restore saved values after wiring up events */
+restoreData();
+
+/* ── DOWNLOAD AS IMAGE ── */
+async function downloadCard(){
+  const btn = document.getElementById('downloadBtn');
+  const card = document.getElementById('reportCard');
+  btn.classList.add('loading');
+  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5" stroke="white" stroke-width="1.7" stroke-dasharray="20" stroke-dashoffset="0"><animateTransform attributeName="transform" type="rotate" from="0 7.5 7.5" to="360 7.5 7.5" dur="0.8s" repeatCount="indefinite"/></circle></svg> Generating…`;
+
+  try {
+    const activeEl = document.activeElement;
+    if (activeEl) activeEl.blur();
+
+    const canvas = await html2canvas(card, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      onclone: (doc) => {
+        doc.querySelectorAll('.val').forEach(el => {
+          el.style.background = 'transparent';
+          el.style.outline = 'none';
+        });
+      }
+    });
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now = new Date();
+    const fname = `AssetInbox_${String(now.getDate()).padStart(2,'0')}${months[now.getMonth()]}${now.getFullYear()}.png`;
+
+    const link = document.createElement('a');
+    link.download = fname;
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+  } catch(err){
+    showToast('Download failed', true);
+    console.error(err);
+  }
+
+  btn.classList.remove('loading');
+  btn.innerHTML = DOWNLOAD_ICON + ' Download as Image';
+}
+</script>
+</body>
+</html>
