@@ -92,7 +92,7 @@ body{background:#F0F4F8;display:flex;flex-direction:column;align-items:center;pa
   margin-top:14px;position:relative;z-index:1;
 }
 .aum-dot{width:6px;height:6px;border-radius:50%;background:#4DFFB4;}
-.aum-txt{font-size:12px;color:rgba(255,255,255,0.8);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
+.aum-txt{font-size:12px;color:rgba(255,255,255,0.8);letter-spacing:1.5px;text-transform:uppercase;font-weight:800;}
 
 /* BODY */
 .body{padding:16px 18px;}
@@ -131,7 +131,7 @@ body{background:#F0F4F8;display:flex;flex-direction:column;align-items:center;pa
 .col{padding:12px 14px;}
 
 .col-label{
-  font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
   margin-bottom:10px;display:flex;align-items:center;gap:5px;
 }
 .cl-today{color:#D97706;}
@@ -239,8 +239,8 @@ body{background:#F0F4F8;display:flex;flex-direction:column;align-items:center;pa
 .val.amber{color:#B45309;font-size:16px;}
 .val.sub{
   font-size:9.5px;
-  font-style:italic;
-  color:#94A3B8;
+  font-style:normal;
+  color:#64748B;
   min-width:20px;
 }
 
@@ -249,11 +249,12 @@ body{background:#F0F4F8;display:flex;flex-direction:column;align-items:center;pa
   content:attr(data-ph);
   opacity:0.30;
   pointer-events:none;
+  font-style:normal;
 }
 .val.teal:empty::before{color:#0B8C63;}
 .val.purple:empty::before{color:#5B3FD6;}
 .val.amber:empty::before{color:#B45309;}
-.val.sub:empty::before{color:#94A3B8;}
+.val.sub:empty::before{color:#64748B;}
 
 /* ── EDIT HINT ── */
 .edit-hint{
@@ -639,7 +640,7 @@ async function downloadCard(){
     if (activeEl) activeEl.blur();
 
     const canvas = await html2canvas(card, {
-      scale: 3,
+      scale: 6,
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
